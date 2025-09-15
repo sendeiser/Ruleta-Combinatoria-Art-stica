@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta Combinatoria Artística</title>
+    <style>
+        :root {
+            --color-rojo: #d92525; --color-rojo-naranja: #e85a21; --color-naranja: #f18d1d;
+            --color-amarillo-naranja: #f7b71a; --color-amarillo: #fafa15; --color-amarillo-verde: #a8d12c;
+            --color-verde: #55a93a; --color-azul-verde: #00814d; --color-azul: #0056a2;
+            --color-azul-violeta: #3b3da8; --color-violeta: #7229a7; --color-rojo-violeta: #a42666;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            text-align: center; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px;
+        }
+        header { 
+            margin-bottom: 25px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        header img {
+            height: 70px;
+            width: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        h1 { color: #2c3e50; }
+        .hidden { display: none !important; }
+
+        button {
+            background-color: #007bff; color: white; border: none; padding: 12px 25px;
+            border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s; margin: 0 10px;
+        }
+        button:hover { background-color: #0056b3; transform: translateY(-2px); }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; transform: none; }
+        
+        #main-challenge-area { max-width: 900px; margin: auto; }
+
+        .roulette-container {
+            position: relative; width: 300px; height: 300px; margin: 40px auto;
+        }
+        #color-wheel-visual {
+            width: 100%; height: 100%;
+            background-image: conic-gradient(
+                var(--color-rojo) 0 30deg, var(--color-rojo-naranja) 30deg 60deg, var(--color-naranja) 60deg 90deg,
+                var(--color-amarillo-naranja) 90deg 120deg, var(--color-amarillo) 120deg 150deg, var(--color-amarillo-verde) 150deg 180deg,
+                var(--color-verde) 180deg 210deg, var(--color-azul-verde) 210deg 240deg, var(--color-azul) 240deg 270deg,
+                var(--color-azul-violeta) 270deg 300deg, var(--color-violeta) 300deg 330deg, var(--color-rojo-violeta) 330deg 360deg
+            );
+            border-radius: 50%; border: 5px solid #333;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            /* --> AQUI OCURRE LA MAGIA (CSS): Esta es la propiedad clave que hace que el giro sea una animación suave. */
+            transition: transform 3s cubic-bezier(0.33, 1, 0.68, 1);
+        }
+
+        .roulette-container .shape {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+        #shape-triada {
+            width: 0; height: 0; border-left: 100px solid transparent;
+            border-right: 100px solid transparent; border-bottom: 170px solid #343a40;
+        }
+        #shape-tetrada {
+            width: 170px; height: 170px; background-color: #343a40;
+        }
+        
+        #progress-tracker {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #17a2b8;
+        }
+
+        #challenges-display {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 30px;
+        }
+        .challenge-card {
+            background-color: #fcfdff;
+            border: 1px solid #ddd;
+            border-top: 5px solid #ccc;
+            border-radius: 8px;
+            padding: 20px; width: 400px; text-align: left;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: border-top-color 0.5s ease;
+        }
+        .pista { font-style: italic; color: #5a5a5a; border-left: 3px solid #007bff; padding-left: 10px;}
+        .verification-area {
+            border-top: 1px solid #eee; margin-top: 15px; padding-top: 15px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .inputs-container { display: flex; gap: 10px; }
+        .challenge-card input, .challenge-card select {
+            padding: 8px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1;
+        }
+        .verification-area button { width: 100%; font-size: 1em; padding: 10px; }
+        
+        .feedback-area { margin-top: 10px; padding: 10px; border-radius: 5px; font-weight: bold; }
+        .feedback-area.correct { background-color: #e9f7ef; color: #155724; }
+        .feedback-area.incorrect { background-color: #f8d7da; color: #721c24; }
+        .feedback-area.partial { background-color: #fff3cd; color: #856404; }
+
+        #galeria-inspiracion {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #ddd;
+        }
+        .galeria-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .galeria-container img {
+            width: 350px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border: 3px solid white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="https://picsum.photos/seed/math/100/100" alt="Pizarra con fórmulas de matemática">
+        <div>
+            <h1>🎲 Ruleta Combinatoria Artística 🎨</h1>
+            <p>Giren la ruleta y resuelvan los desafíos. ¡Deben completar 2 rondas para ganar!</p>
+        </div>
+        <img src="https://picsum.photos/seed/art/100/100" alt="Paleta de arte con pinceles">
+    </header>
+
+    <main id="main-challenge-area">
+        <div id="progress-tracker">Rondas completadas: 0 de 2</div>
+        <div class="roulette-container">
+            <div id="color-wheel-visual"></div>
+            <div id="shape-triada" class="shape hidden"></div>
+            <div id="shape-tetrada" class="shape hidden"></div>
+        </div>
+        <div class="controls">
+            <button id="spin-triada">Girar Triada (▲)</button>
+            <button id="spin-tetrada">Girar Tetrada (■)</button>
+        </div>
+        <div id="challenges-display"></div>
+    </main>
+    
+    <section id="galeria-inspiracion">
+        <h2>Galería de Inspiración</h2>
+        <div class="galeria-container">
+            <img src="https://picsum.photos/seed/mosaico/350/250" alt="Mosaicos de colores que representan la permutación con repetición">
+            <img src="https://picsum.photos/seed/flores/350/250" alt="Ramo de flores que representa la combinación">
+            <img src="https://picsum.photos/seed/banderas/350/250" alt="Diseño de banderas que representa la variación">
+            <img src="https://picsum.photos/seed/geometrico/350/250" alt="Patrón geométrico estilo Op-Art">
+        </div>
+    </section>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const desafios = [
+            { id: 1, colorName: "Rojo", hex: "#d92525", concept: "Permutación Simple", challenge: "Un pintor debe ordenar sus 3 colores primarios en su paleta.", question: "¿De cuántas formas puede ordenarlos?", pista: "Es un color primario y su complementario es el verde." },
+            { id: 2, colorName: "Rojo-Naranja", hex: "#e85a21", concept: "Permutación Simple", challenge: "Para un atardecer, se deben ordenar 4 lápices de colores cálidos distintos en una caja.", question: "¿De cuántas maneras se pueden ordenar?", pista: "Es un color terciario cálido, análogo al rojo y al naranja." },
+            { id: 3, colorName: "Naranja", hex: "#f18d1d", concept: "Variación Simple", challenge: "Un artista debe elegir 3 frutas de una canasta de 7 frutas distintas y ordenarlas para una pintura. El orden importa.", question: "¿De cuántas maneras puede ordenar las 3 frutas?", pista: "Es un color secundario cálido, resultado de mezclar rojo y amarillo." },
+            { id: 4, colorName: "Amarillo-Naranja", hex: "#f7b71a", concept: "Combinación Simple", challenge: "Un chef elige 4 frutas de un bol que contiene 9 variedades distintas (naranjas, mangos, etc.).", question: "¿Cuántos grupos de 4 frutas puede tomar?", pista: "Es un color terciario cálido. Su complementario es el azul-violeta." },
+            { id: 5, colorName: "Amarillo", hex: "#fafa15", concept: "Combinación Simple", challenge: "De un grupo de 7 pinceles distintos, un artista debe elegir 2 para pintar.", question: "¿Cuántos pares de pinceles distintos puede elegir?", pista: "Es un color primario. Al mezclarlo con azul se obtiene verde." },
+            { id: 6, colorName: "Amarillo-Verde", hex: "#a8d12c", concept: "Permutación Simple", challenge: "En un estante se quieren ordenar 5 libros de arte con lomos de distintos tonos de amarillo y verde.", question: "¿De cuántas maneras diferentes se pueden alinear los 5 libros?", pista: "Es un color terciario. Se encuentra entre un primario cálido y un secundario frío." },
+            { id: 7, colorName: "Verde", hex: "#55a93a", concept: "Combinación Simple", challenge: "Un paisajista tiene 10 plantas de diferentes tonos de verde y debe elegir un grupo de 4 para un cantero.", question: "¿Cuántos grupos distintos de 4 plantas puede formar?", pista: "Es un color secundario frío, complementario del rojo." },
+            { id: 8, colorName: "Azul-Verde", hex: "#00814d", concept: "Variación Simple", challenge: "Para nombrar tonos de agua, se usan códigos de 2 letras distintas de la palabra 'TURQUESA' (8 letras).", question: "¿Cuántos códigos se pueden crear?", pista: "Es un color terciario frío, complementario del rojo-naranja." },
+            { id: 9, colorName: "Azul", hex: "#0056a2", concept: "Variación Simple", challenge: "Se deben crear banderas de 2 franjas de colores distintos, usando 4 tonos de pintura.", question: "¿Cuántas banderas diferentes se pueden diseñar?", pista: "Es un color primario frío. Su complementario es el naranja." },
+            { id: 10, colorName: "Azul-Violeta", hex: "#3b3da8", concept: "Combinación Simple", challenge: "Un joyero tiene 8 gemas únicas de tonos azulados y violetas. Debe seleccionar 3 para un collar.", question: "¿Cuántos conjuntos distintos de 3 gemas puede elegir?", pista: "Es un color terciario frío, análogo al azul y al violeta." },
+            { id: 11, colorName: "Violeta", hex: "#7229a7", concept: "Combinación Simple", challenge: "Una florista tiene 8 tipos de flores distintas y debe hacer un ramo con 3 tipos.", question: "¿Cuántos ramos diferentes puede crear?", pista: "Es un color secundario, análogo al azul y al rojo." },
+            { id: 12, colorName: "Rojo-Violeta", hex: "#a42666", concept: "Permutación Simple", challenge: "Se deben colgar 5 cuadros distintos con tonos rojizos y púrpuras en una pared, uno al lado del otro.", question: "¿De cuántas formas se pueden colgar?", pista: "Es un color terciario, a veces llamado magenta. Su complementario es el amarillo-verde." }
+        ];
+        const solucionesSecretas = {
+            1: { solucion: 6, curiosidad: "La permutación simple se usa cuando el orden de todos los elementos importa." },
+            2: { solucion: 24, curiosidad: "Al ordenar 4 de 4 elementos, usamos la permutación P(4) = 4!." },
+            3: { solucion: 210, curiosidad: "La variación se usa cuando importa el orden de un subgrupo de elementos. V(7,3)." },
+            4: { solucion: 126, curiosidad: "La combinación es ideal para seleccionar grupos donde el orden no importa. C(9,4)." },
+            5: { solucion: 21, curiosidad: "Elegir un par de pinceles es un problema clásico de combinación. C(7,2)." },
+            6: { solucion: 120, curiosidad: "Ordenar 5 libros distintos es una permutación simple. P(5) = 5!." },
+            7: { solucion: 210, curiosidad: "Seleccionar 4 plantas de 10 es un caso de combinación. C(10,4)." },
+            8: { solucion: 56, curiosidad: "Crear códigos de 2 letras distintas es una variación. V(8,2)." },
+            9: { solucion: 12, curiosidad: "El orden de las franjas de una bandera importa, por eso es una variación. V(4,2)." },
+            10: { solucion: 56, curiosidad: "Al elegir 3 gemas de 8 sin importar el orden, se usa la combinación. C(8,3)." },
+            11: { solucion: 56, curiosidad: "Formar un ramo con distintos tipos de flores es un problema de combinación. C(8,3)." },
+            12: { solucion: 120, curiosidad: "El orden en que se cuelgan los cuadros cambia la exposición, por eso es una permutación. P(5) = 5!." }
+        };
+
+        const wheel = document.getElementById('color-wheel-visual');
+        const challengesDisplay = document.getElementById('challenges-display');
+        const progressTracker = document.getElementById('progress-tracker');
+        const triadaBtn = document.getElementById('spin-triada');
+        const tetradaBtn = document.getElementById('spin-tetrada');
+        let audioCtx, spinSoundNode;
+        let currentRotation = 0, isSpinning = false, roundsCompleted = 0, currentChallenges = [];
+
+        function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        function playClickSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+        function playSpinSound() {
+            if (!audioCtx) return;
+            stopSpinSound();
+            const bufferSize = audioCtx.sampleRate * 1.5;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            let data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+            spinSoundNode = audioCtx.createBufferSource();
+            spinSoundNode.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(20, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(1500, audioCtx.currentTime + 0.4);
+            filter.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 1.5);
+            spinSoundNode.connect(filter);
+            filter.connect(audioCtx.destination);
+            spinSoundNode.loop = true;
+            spinSoundNode.start();
+        }
+        function stopSpinSound() {
+            if (spinSoundNode) {
+                spinSoundNode.stop();
+            }
+        }
+        
+        function init() {
+            triadaBtn.addEventListener('click', () => spinRoulette(3));
+            tetradaBtn.addEventListener('click', () => spinRoulette(4));
+            challengesDisplay.addEventListener('click', (event) => {
+                if (event.target && event.target.matches('.verify-btn')) {
+                    setupAudio();
+                    playClickSound();
+                    handleVerification(event.target);
+                }
+            });
+        }
+        
+        function spinRoulette(count) {
+            if (isSpinning || roundsCompleted >= 2) return;
+            setupAudio();
+            playClickSound();
+            isSpinning = true;
+            triadaBtn.disabled = true;
+            tetradaBtn.disabled = true;
+
+            document.getElementById('shape-triada').classList.toggle('hidden', count !== 3);
+            document.getElementById('shape-tetrada').classList.toggle('hidden', count !== 4);
+
+            playSpinSound();
+            
+            const randomSpins = 3 + Math.random() * 3;
+            currentRotation += (360 * randomSpins);
+            
+            // --> AQUI OCURRE LA MAGIA (JAVASCRIPT): Esta línea dispara la animación del CSS al cambiar el ángulo de rotación.
+            wheel.style.transform = rotate(${currentRotation}deg);
+
+            challengesDisplay.innerHTML = '<p style="font-size: 1.2em; color: #555;">Girando la ruleta...</p>';
+
+            setTimeout(() => {
+                stopSpinSound();
+                const shuffled = [...desafios].sort(() => 0.5 - Math.random());
+                currentChallenges = shuffled.slice(0, count).map(c => ({...c, solved: false}));
+                displayChallenges(currentChallenges);
+                isSpinning = false;
+                if (roundsCompleted < 2) {
+                    triadaBtn.disabled = false;
+                    tetradaBtn.disabled = false;
+                }
+            }, 3000);
+        }
+
+        function displayChallenges(selected) {
+            challengesDisplay.innerHTML = '';
+            selected.forEach(desafio => {
+                const card = document.createElement('div');
+                card.className = 'challenge-card';
+                card.id = card-${desafio.id};
+                card.innerHTML = `
+                    <h3>Desafío Secreto</h3>
+                    <p class="pista"><strong>Pista:</strong> ${desafio.pista}</p>
+                    <p><strong>Concepto:</strong> ${desafio.concept}</p>
+                    <p>${desafio.challenge}</p>
+                    <strong>${desafio.question}</strong>
+                    <div class="verification-area">
+                        <div class="inputs-container">
+                            <input type="number" placeholder="Resultado...">
+                            <select>
+                                <option value="">Elige un color...</option>
+                                ${desafios.map(d => <option value="${d.colorName}">${d.colorName}</option>).join('')}
+                            </select>
+                        </div>
+                        <button class="verify-btn" data-id="${desafio.id}">Verificar Desafío</button>
+                    </div>
+                    <div class="feedback-area hidden" id="feedback-${desafio.id}"></div>`;
+                challengesDisplay.appendChild(card);
+            });
+        }
+
+        function handleVerification(button) {
+            const challengeId = button.dataset.id;
+            const card = document.getElementById(card-${challengeId});
+            const input = card.querySelector('input[type="number"]');
+            const select = card.querySelector('select');
+            
+            const serverResponse = solucionesSecretas[challengeId];
+            const desafioData = desafios.find(d => d.id == challengeId);
+            const feedbackEl = document.getElementById(feedback-${challengeId});
+
+            const numberCorrect = parseInt(input.value, 10) === serverResponse.solucion;
+            const colorCorrect = select.value === desafioData.colorName;
+
+            if (numberCorrect && colorCorrect) {
+                const challengeInRound = currentChallenges.find(c => c.id == challengeId);
+                if (challengeInRound) challengeInRound.solved = true;
+
+                card.style.borderTopColor = desafioData.hex;
+                card.querySelector('h3').textContent = ¡Resuelto! Era ${desafioData.colorName};
+                feedbackEl.innerHTML = <strong>¡Desafío Completo!</strong> ${serverResponse.curiosidad};
+                feedbackEl.className = 'feedback-area correct';
+                card.querySelector('.verification-area').classList.add('hidden');
+                
+                checkRoundCompletion();
+            } else if (numberCorrect && !colorCorrect) {
+                feedbackEl.innerHTML = <strong>Parcialmente correcto.</strong> ¡El cálculo es correcto, pero el color no!;
+                feedbackEl.className = 'feedback-area partial';
+            } else if (!numberCorrect && colorCorrect) {
+                feedbackEl.innerHTML = <strong>Parcialmente correcto.</strong> ¡Adivinaron el color, pero el cálculo es incorrecto!;
+                feedbackEl.className = 'feedback-area partial';
+            } else {
+                feedbackEl.innerHTML = <strong>Incorrecto.</strong> Ni el cálculo ni el color son correctos.;
+                feedbackEl.className = 'feedback-area incorrect';
+            }
+            feedbackEl.classList.remove('hidden');
+        }
+
+        function checkRoundCompletion() {
+            if (currentChallenges.length === 0) return;
+            const allSolved = currentChallenges.every(c => c.solved);
+
+            if (allSolved) {
+                roundsCompleted++;
+                progressTracker.textContent = Rondas completadas: ${roundsCompleted} de 2;
+                
+                const title = ¡Ronda ${roundsCompleted} superada! Han descubierto la armonía:;
+                const colorDisplayHTML = currentChallenges.map(challenge => {
+                    const hex = challenge.hex.substring(1), r = parseInt(hex.substring(0,2),16), g = parseInt(hex.substring(2,4),16), b = parseInt(hex.substring(4,6),16);
+                    const textColor = ((r*0.299 + g*0.587 + b*0.114) > 186) ? 'black' : 'white';
+                    return <span style="background-color:${challenge.hex};color:${textColor};padding:10px 15px;border-radius:5px;margin:5px;display:inline-block;font-weight:bold;">${challenge.colorName}</span>;
+                }).join('');
+
+                challengesDisplay.innerHTML = <div style="width: 100%;"><h2 style="color: #28a745;">${title}</h2><div style="margin-top:15px;">${colorDisplayHTML}</div></div>;
+                currentChallenges = [];
+
+                if (roundsCompleted >= 2) {
+                    progressTracker.textContent = "¡Desafío Global Completado!";
+                    challengesDisplay.innerHTML += <h2 style="color: #28a745; font-size: 2em; margin-top: 20px;">¡FELICITACIONES! Han completado toda la actividad.</h2>;
+                    triadaBtn.disabled = true;
+                    tetradaBtn.disabled = true;
+                }
+            }
+        }
+        init();
+    });
+    </script>
+</body>
+</html>
