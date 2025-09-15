@@ -5,60 +5,228 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruleta Combinatoria Artística</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+        
         :root {
-            --color-rojo: #d92525; --color-rojo-naranja: #e85a21; --color-naranja: #f18d1d;
-            --color-amarillo-naranja: #f7b71a; --color-amarillo: #fafa15; --color-amarillo-verde: #a8d12c;
-            --color-verde: #55a93a; --color-azul-verde: #00814d; --color-azul: #0056a2;
-            --color-azul-violeta: #3b3da8; --color-violeta: #7229a7; --color-rojo-violeta: #a42666;
+            /* Paleta de colores mejorada - más vibrante y armoniosa */
+            --color-rojo: #e63946; --color-rojo-naranja: #f94144; --color-naranja: #f8961e;
+            --color-amarillo-naranja: #f9c74f; --color-amarillo: #f9f871; --color-amarillo-verde: #90be6d;
+            --color-verde: #43aa8b; --color-azul-verde: #4d908e; --color-azul: #277da1;
+            --color-azul-violeta: #5e60ce; --color-violeta: #7400b8; --color-rojo-violeta: #b5179e;
+            
+            /* Variables para el tema general */
+            --color-background: #f8f9fa;
+            --color-card-bg: #ffffff;
+            --color-text: #2b2d42;
+            --color-text-secondary: #6c757d;
+            --color-accent: #277da1;
+            --color-accent-hover: #1a5d7a;
+            
+            /* Colores de estado para retroalimentación */
+            --color-success: #43aa8b;
+            --color-warning: #f9c74f;
+            --color-danger: #e63946;
+            
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
         }
+        
+        /* Utilidades de accesibilidad y foco */
+        .visually-hidden { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+        :focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+        button:focus-visible, .verify-btn:focus-visible { box-shadow: 0 0 0 3px rgba(39,125,161,0.35); }
+        input:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(67,170,139,0.25); border-color: var(--color-accent); }
+
+        /* Barra de progreso de rondas */
+        .progress-bar { margin-top: 8px; width: 100%; height: 8px; background: rgba(0,0,0,0.08); border-radius: 999px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--color-accent), var(--color-success)); transition: width 0.6s ease; }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            text-align: center; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-align: center; 
+            background-color: var(--color-background); 
+            color: var(--color-text); 
+            margin: 0; 
+            padding: 0;
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image: linear-gradient(135deg, rgba(247, 247, 247, 0.8) 0%, rgba(240, 240, 240, 0.8) 100%);
+            background-attachment: fixed;
         }
         header { 
-            margin-bottom: 25px; 
+            margin: 0 0 40px; 
+            padding: 40px 20px 30px;
             display: flex; 
             align-items: center; 
             justify-content: center;
-            gap: 20px;
+            gap: 25px;
             flex-wrap: wrap;
+            background-color: var(--color-card-bg);
+            box-shadow: var(--box-shadow);
+            border-bottom: 5px solid var(--color-accent);
+            position: relative;
+            overflow: hidden;
         }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background-image: linear-gradient(to right, 
+                var(--color-rojo), var(--color-naranja), 
+                var(--color-amarillo), var(--color-verde), 
+                var(--color-azul), var(--color-violeta));
+        }
+        
         header img {
-            height: 70px;
-            width: 70px;
+            height: 80px;
+            width: 80px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 50%;
+            border: 3px solid var(--color-accent);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        h1 { color: #2c3e50; }
+        
+        header img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        h1 { 
+            color: var(--color-text); 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: var(--color-text-secondary);
+            font-size: 1.1em;
+            max-width: 600px;
+        }
+        
         .hidden { display: none !important; }
 
         button {
-            background-color: #007bff; color: white; border: none; padding: 12px 25px;
-            border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold;
-            transition: background-color 0.3s, transform 0.2s; margin: 0 10px;
+            background-color: var(--color-accent); 
+            color: white; 
+            border: none; 
+            padding: 14px 28px;
+            border-radius: var(--border-radius); 
+            cursor: pointer; 
+            font-size: 1.1em; 
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease; 
+            margin: 0 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
-        button:hover { background-color: #0056b3; transform: translateY(-2px); }
-        button:disabled { background-color: #6c757d; cursor: not-allowed; transform: none; }
         
-        #main-challenge-area { max-width: 900px; margin: auto; }
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: 0.6s;
+            z-index: -1;
+        }
+        
+        button:hover { 
+            background-color: var(--color-accent-hover); 
+            transform: translateY(-3px); 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        button:hover::before {
+            transform: translateX(100%);
+        }
+        
+        button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:disabled { 
+            background-color: var(--color-text-secondary); 
+            cursor: not-allowed; 
+            transform: none; 
+            box-shadow: none;
+            opacity: 0.7;
+        }
+        
+        #main-challenge-area { 
+            max-width: 1100px; 
+            margin: 0 auto 60px; 
+            padding: 0 20px;
+        }
 
         .roulette-container {
-            position: relative; width: 300px; height: 300px; margin: 40px auto;
+            position: relative; 
+            width: 350px; 
+            height: 350px; 
+            margin: 50px auto;
+            perspective: 1000px;
         }
+        
         #color-wheel-visual {
-            width: 100%; height: 100%;
+            width: 100%; 
+            height: 100%;
             background-image: conic-gradient(
                 var(--color-rojo) 0 30deg, var(--color-rojo-naranja) 30deg 60deg, var(--color-naranja) 60deg 90deg,
                 var(--color-amarillo-naranja) 90deg 120deg, var(--color-amarillo) 120deg 150deg, var(--color-amarillo-verde) 150deg 180deg,
                 var(--color-verde) 180deg 210deg, var(--color-azul-verde) 210deg 240deg, var(--color-azul) 240deg 270deg,
                 var(--color-azul-violeta) 270deg 300deg, var(--color-violeta) 300deg 330deg, var(--color-rojo-violeta) 330deg 360deg
             );
-            border-radius: 50%; border: 5px solid #333;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            /* La animación ahora se define y se aplica con la clase '.spinning' */
+            border-radius: 50%; 
+            border: 8px solid white;
+            box-shadow: var(--box-shadow), 0 0 0 3px var(--color-accent), inset 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+            transform-style: preserve-3d;
+        }
+        
+        #color-wheel-visual::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+            border: 3px solid var(--color-accent);
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        
+        .controls {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        /* --> AQUI OCURRE LA MAGIA (CSS): Definición explícita de la animación de giro. */
+        /* Animación de giro mejorada */
         @keyframes spin-animation {
             from {
                 transform: rotate(var(--start-angle));
@@ -67,6 +235,13 @@
                 transform: rotate(var(--end-angle));
             }
         }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
         .spinning {
             animation-name: spin-animation;
             animation-duration: 3s;
@@ -75,78 +250,446 @@
             animation-iteration-count: 1; /* Asegura que la animación solo se ejecute una vez */
         }
 
+        /* Indicador de selección */
+        .roulette-container::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 25px solid var(--color-accent);
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+            z-index: 10;
+        }
 
         .roulette-container .shape {
-            position: absolute; top: 50%; left: 50%;
+            position: absolute; 
+            top: 50%; 
+            left: 50%;
             transform: translate(-50%, -50%);
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+            transition: all 0.3s ease;
+            opacity: 0.85;
+            z-index: 5;
         }
+        
         #shape-triada {
-            width: 0; height: 0; border-left: 100px solid transparent;
-            border-right: 100px solid transparent; border-bottom: 170px solid #343a40;
+            width: 0; 
+            height: 0; 
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent; 
+            border-bottom: 170px solid var(--color-accent);
         }
+        
         #shape-tetrada {
-            width: 170px; height: 170px; background-color: #343a40;
+            width: 170px; 
+            height: 170px; 
+            background-color: var(--color-accent);
+            border-radius: 15px;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        
+        .shape.hidden {
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
         }
         
         #progress-tracker {
-            margin-top: 20px;
+            margin: 30px 0;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--color-accent);
+            padding: 15px;
+            background-color: var(--color-card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: inline-block;
+        }
+        
+        #progress-tracker::before {
+            content: '🏆';
+            margin-right: 10px;
             font-size: 1.2em;
-            font-weight: bold;
-            color: #17a2b8;
         }
 
         #challenges-display {
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 30px;
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 30px; 
+            margin-top: 40px;
         }
-        .challenge-card {
-            background-color: #fcfdff;
-            border: 1px solid #ddd;
-            border-top: 5px solid #ccc;
-            border-radius: 8px;
-            padding: 20px; width: 400px; text-align: left;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: border-top-color 0.5s ease;
-        }
-        .pista { font-style: italic; color: #5a5a5a; border-left: 3px solid #007bff; padding-left: 10px;}
-        .verification-area {
-            border-top: 1px solid #eee; margin-top: 15px; padding-top: 15px;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        .inputs-container { display: flex; gap: 10px; }
-        .challenge-card input, .challenge-card select {
-            padding: 8px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1;
-        }
-        .verification-area button { width: 100%; font-size: 1em; padding: 10px; }
         
-        .feedback-area { margin-top: 10px; padding: 10px; border-radius: 5px; font-weight: bold; }
-        .feedback-area.correct { background-color: #e9f7ef; color: #155724; }
-        .feedback-area.incorrect { background-color: #f8d7da; color: #721c24; }
-        .feedback-area.partial { background-color: #fff3cd; color: #856404; }
+        .challenge-card {
+            background-color: var(--color-card-bg);
+            border: none;
+            border-top: 6px solid #ccc;
+            border-radius: var(--border-radius);
+            padding: 25px; 
+            width: 450px; 
+            text-align: left;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .challenge-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .challenge-icon {
+            font-size: 1.8em;
+            margin-right: 15px;
+            background-color: rgba(39, 125, 161, 0.1);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: var(--color-accent);
+        }
+        
+        .challenge-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4em;
+            color: var(--color-text);
+            margin: 0;
+        }
+        
+        .challenge-card p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        .challenge-card {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .pista { 
+            font-style: italic; 
+            color: var(--color-text-secondary); 
+            border-left: 4px solid var(--color-accent); 
+            padding: 10px 15px;
+            background-color: rgba(39, 125, 161, 0.05);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            margin: 15px 0;
+        }
+        
+        .verification-area {
+            border-top: 1px solid rgba(0,0,0,0.1); 
+            margin-top: 20px; 
+            padding-top: 20px;
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+        }
+        
+        /* Estilos para el mensaje de finalización */
+        .completion-message {
+            background: var(--color-card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            border-top: 4px solid var(--color-accent);
+            transition: all 0.3s ease;
+        }
+        
+        .completion-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .completion-icon {
+            font-size: 2em;
+            margin-right: 15px;
+            background: linear-gradient(135deg, var(--color-accent), var(--color-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        .completion-message h3 {
+            color: var(--color-accent);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .completion-message p {
+            color: var(--color-text);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .continue-button {
+            background: linear-gradient(135deg, var(--color-accent), var(--color-success));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .continue-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .completion-confetti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(circle, var(--color-accent) 2px, transparent 2px),
+                radial-gradient(circle, var(--color-success) 3px, transparent 3px),
+                radial-gradient(circle, var(--color-warning) 2px, transparent 2px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px, 5px 10px;
+            animation: confetti-fall 2s linear forwards;
+            opacity: 0;
+            z-index: 1;
+        }
+        
+        .inputs-container { 
+            display: flex; 
+            gap: 15px; 
+        }
+        
+        .challenge-card input, .challenge-card select {
+            padding: 12px 15px; 
+            border: 1px solid rgba(0,0,0,0.1); 
+            border-radius: var(--border-radius); 
+            flex-grow: 1;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .challenge-card input:focus, .challenge-card select:focus {
+            border-color: var(--color-accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(39, 125, 161, 0.2);
+        }
+        
+        .verification-area button { 
+            width: 100%; 
+            font-size: 1em; 
+            padding: 12px; 
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .button-icon {
+            margin-right: 8px;
+            font-size: 1.1em;
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .feedback-area { 
+            margin-top: 15px; 
+            padding: 15px; 
+            border-radius: var(--border-radius); 
+            font-weight: 500; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feedback-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .confetti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(circle, var(--color-primary) 2px, transparent 2px),
+                radial-gradient(circle, var(--color-secondary) 3px, transparent 3px),
+                radial-gradient(circle, var(--color-accent) 2px, transparent 2px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px, 5px 10px;
+            animation: confetti-fall 2s linear forwards;
+            opacity: 0;
+        }
+        
+        @keyframes confetti-fall {
+            0% { background-position: 0 -100px, 15px -85px, 5px -90px; opacity: 1; }
+            100% { background-position: 0 100%, 15px 115%, 5px 110%; opacity: 0; }
+        }
+        
+        .feedback-area.correct { 
+            background-color: rgba(67, 170, 139, 0.15); 
+            color: var(--color-success); 
+            border-left: 4px solid var(--color-success);
+        }
+        
+        .feedback-area.incorrect { 
+            background-color: rgba(230, 57, 70, 0.15); 
+            color: var(--color-danger); 
+            border-left: 4px solid var(--color-danger);
+        }
+        
+        .feedback-area.partial { 
+            background-color: rgba(249, 199, 79, 0.15); 
+            color: var(--color-warning); 
+            border-left: 4px solid var(--color-warning);
+        }
 
         #galeria-inspiracion {
             margin-top: 50px;
-            padding-top: 30px;
-            border-top: 2px solid #ddd;
+            padding: 40px 30px;
+            background: linear-gradient(135deg, var(--color-card-bg) 0%, rgba(255,255,255,0.9) 100%);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
         }
+        
+        #galeria-inspiracion::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background-image: linear-gradient(to right, 
+                var(--color-rojo), var(--color-naranja), 
+                var(--color-amarillo), var(--color-verde), 
+                var(--color-azul), var(--color-violeta));
+        }
+        
+        #galeria-inspiracion h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--color-text);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2em;
+            font-weight: 700;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        #galeria-inspiracion h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-rojo), var(--color-azul));
+            border-radius: 3px;
+        }
+        
         .galeria-container {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 30px;
+            margin-top: 30px;
         }
+        
         .galeria-container img {
             width: 350px;
             height: 250px;
             object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            border: 3px solid white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: 5px solid white;
+            transition: all 0.3s ease;
         }
+        
+        .galeria-container img:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            border-color: var(--color-accent);
+        }
+        /* Armonizador Exprés */
+        #armonizador-expres { margin: 40px auto; max-width: 1000px; padding: 20px; background: var(--surface, #fff); border-radius: var(--border-radius, 12px); box-shadow: var(--box-shadow, 0 10px 20px rgba(0,0,0,0.08)); border: 1px solid rgba(0,0,0,0.06); }
+        #armonizador-expres h2 { margin: 0 0 10px; }
+        #armonizador-expres .arm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+        @media (max-width: 900px) { #armonizador-expres .arm-grid { grid-template-columns: 1fr; } }
+        .arm-wheel { position: relative; width: 320px; height: 320px; border-radius: 50%; margin: 0 auto; box-shadow: var(--box-shadow); border: 6px solid #fff; background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red); }
+        .arm-marker { position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transform: translate(-50%, -50%); cursor: grab; transition: box-shadow 0.2s ease, transform 0.06s linear; }
+        .arm-marker:active { cursor: grabbing; }
+        .arm-marker[data-role="base"] { background: var(--color-accent, #ff6a00); }
+        .arm-marker[data-role="mov"] { background: var(--color-primary, #0066ff); }
+        .arm-side { display: flex; flex-direction: column; gap: 12px; }
+        .arm-mission { font-weight: 600; }
+        .arm-swatches { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .arm-swatch { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08); }
+        .arm-swatch .chip { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .arm-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        .arm-controls .secondary { background: #f3f4f6; color: #111827; border: 1px solid #e5e7eb; }
+        .arm-progress { font-size: 0.95rem; color: #111827; }
+        /* Laboratorio de Mezclas */
+        #laboratorio-mezclas { margin: 40px auto; max-width: 1000px; padding: 20px; background: var(--surface, #fff); border-radius: var(--border-radius, 12px); box-shadow: var(--box-shadow, 0 10px 20px rgba(0,0,0,0.08)); border: 1px solid rgba(0,0,0,0.06); }
+        #laboratorio-mezclas .mix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+        @media (max-width: 900px) { #laboratorio-mezclas .mix-grid { grid-template-columns: 1fr; } }
+        .mix-patches { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .mix-patch { width: 120px; height: 120px; border-radius: 12px; border: 6px solid #fff; box-shadow: var(--box-shadow); }
+        .mix-patch small { display: block; margin-top: 6px; color: #374151; font-weight: 600; }
+        .mix-controls { display: flex; flex-direction: column; gap: 10px; }
+        .mix-row { display: flex; align-items: center; gap: 10px; }
+        .mix-row label { width: 22px; font-weight: 700; }
+        .mix-row input[type="range"] { flex: 1; }
+        .mix-vals { min-width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
+        .mix-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        #ml-feedback { margin-top: 6px; }
     </style>
 </head>
 <body>
-    <header>
+    <header role="banner">
         <img src="https://picsum.photos/seed/math/100/100" alt="Pizarra con fórmulas de matemática">
         <div>
             <h1>🎲 Ruleta Combinatoria Artística 🎨</h1>
@@ -155,20 +698,89 @@
         <img src="https://picsum.photos/seed/art/100/100" alt="Paleta de arte con pinceles">
     </header>
 
-    <main id="main-challenge-area">
-        <div id="progress-tracker">Rondas completadas: 0 de 2</div>
-        <div class="roulette-container">
-            <div id="color-wheel-visual"></div>
-            <div id="shape-triada" class="shape hidden"></div>
-            <div id="shape-tetrada" class="shape hidden"></div>
+    <main id="main-challenge-area" role="main" aria-label="Área principal de desafíos">
+        <div id="progress-tracker" role="status" aria-live="polite" aria-atomic="true">Rondas completadas: 0 de 2</div>
+<div class="progress-bar" aria-hidden="true"><div class="progress-fill" style="width:0%"></div></div>
+        <div class="roulette-container" role="group" aria-label="Ruleta de colores">
+            <div id="color-wheel-visual" aria-hidden="true"></div>
+            <div id="shape-triada" class="shape hidden" aria-hidden="true"></div>
+            <div id="shape-tetrada" class="shape hidden" aria-hidden="true"></div>
         </div>
         <div class="controls">
-            <button id="spin-triada">Girar Triada (▲)</button>
-            <button id="spin-tetrada">Girar Tetrada (■)</button>
+            <button id="spin-triada" aria-label="Girar ruleta en modo tríada" title="Girar ruleta en modo tríada">Girar Triada (▲)</button>
+            <button id="spin-tetrada" aria-label="Girar ruleta en modo tétrada" title="Girar ruleta en modo tétrada">Girar Tetrada (■)</button>
         </div>
-        <div id="challenges-display"></div>
+        <div id="challenges-display" role="region" aria-live="polite" aria-label="Desafíos actuales"></div>
+        
+        <!-- Armonizador Exprés -->
+        <section id="armonizador-expres" aria-labelledby="ae-title" role="region">
+            <h2 id="ae-title">Armonizador Exprés</h2>
+            <p class="arm-mission" id="ae-mision">Misión: Triada</p>
+            <div class="arm-grid">
+                <div class="arm-side">
+                    <div class="arm-wheel" id="ae-wheel" aria-label="Rueda de color interactiva" role="application"></div>
+                </div>
+                <div class="arm-side">
+                    <div class="arm-swatches" id="ae-swatches" aria-live="polite"></div>
+                    <div class="arm-controls">
+                        <button id="ae-random" class="secondary">Color base aleatorio</button>
+                        <button id="ae-tipo" class="secondary" aria-haspopup="listbox" aria-expanded="false">Cambiar armonía</button>
+                        <button id="ae-verificar">Verificar</button>
+                    </div>
+                    <div class="feedback-area hidden" id="ae-feedback" role="alert"></div>
+                </div>
+            </div>
+        </section>
+
     </main>
     
+    <!-- Laboratorio de Mezclas -->
+    <section id="laboratorio-mezclas" aria-labelledby="ml-title" role="region">
+        <h2 id="ml-title">Laboratorio de Mezclas</h2>
+        <div class="mix-grid">
+            <div class="mix-left">
+                <div class="mix-patches">
+                    <div>
+                        <div class="mix-patch" id="ml-base" aria-label="Color base"></div>
+                        <small>Base</small>
+                    </div>
+                    <div>
+                        <div class="mix-patch" id="ml-medio" aria-label="Color intermedio"></div>
+                        <small>Intermedio</small>
+                    </div>
+                    <div>
+                        <div class="mix-patch" id="ml-objetivo" aria-label="Color objetivo"></div>
+                        <small>Objetivo</small>
+                    </div>
+                </div>
+            </div>
+            <div class="mix-right">
+                <div class="mix-controls" aria-live="polite">
+                    <div class="mix-row">
+                        <label for="ml-r">R</label>
+                        <input id="ml-r" type="range" min="0" max="255" value="128" />
+                        <span class="mix-vals" id="ml-r-val">128</span>
+                    </div>
+                    <div class="mix-row">
+                        <label for="ml-g">G</label>
+                        <input id="ml-g" type="range" min="0" max="255" value="128" />
+                        <span class="mix-vals" id="ml-g-val">128</span>
+                    </div>
+                    <div class="mix-row">
+                        <label for="ml-b">B</label>
+                        <input id="ml-b" type="range" min="0" max="255" value="128" />
+                        <span class="mix-vals" id="ml-b-val">128</span>
+                    </div>
+                    <div class="mix-actions">
+                        <button id="ml-random" class="secondary">Nuevo objetivo</button>
+                        <button id="ml-verificar">Mezclar</button>
+                    </div>
+                    <div id="ml-feedback" class="feedback-area hidden" role="alert"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="galeria-inspiracion">
         <h2>Galería de Inspiración</h2>
         <div class="galeria-container">
@@ -215,10 +827,51 @@
         const progressTracker = document.getElementById('progress-tracker');
         const triadaBtn = document.getElementById('spin-triada');
         const tetradaBtn = document.getElementById('spin-tetrada');
+
+        // Armonizador Exprés - refs
+        const aeWheel = document.getElementById('ae-wheel');
+        const aeSwatches = document.getElementById('ae-swatches');
+        const aeRandom = document.getElementById('ae-random');
+        const aeTipo = document.getElementById('ae-tipo');
+        const aeVerificar = document.getElementById('ae-verificar');
+        const aeFeedback = document.getElementById('ae-feedback');
+
         let audioCtx, spinSoundNode;
         let currentRotation = 0, isSpinning = false, roundsCompleted = 0, currentChallenges = [];
 
+        // Estado del Armonizador Exprés
+        const AE_TYPES = ['Triada', 'Tétrada', 'Complementaria', 'Análoga'];
+        let aeState = {
+            tipo: 'Triada',
+            baseHue: 30,
+            markers: [] // {role:'base'|'mov', hue:number, el:HTMLElement}
+        };
+
         function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+        // Utilidades AE
+        const hueToRgb = (h) => {
+            const f = (n) => {
+                const k = (n + h/30) % 12;
+                return 255 * (Math.min(Math.max(Math.min(k-3, 9-k, 1), 0), 1));
+            };
+            return `rgb(${f(0)}, ${f(8)}, ${f(4)})`;
+        };
+        const polarToXY = (center, radius, angleDeg) => {
+            const a = (angleDeg - 90) * Math.PI / 180;
+            return { x: center.x + radius * Math.cos(a), y: center.y + radius * Math.sin(a) };
+        };
+        const clampHue = (h) => (h % 360 + 360) % 360;
+        const setSwatches = (hues) => {
+            aeSwatches.innerHTML = '';
+            hues.forEach((h, i) => {
+                const div = document.createElement('div');
+                div.className = 'arm-swatch';
+                div.innerHTML = `<span class="chip" style="background: hsl(${h}, 80%, 50%)"></span><span>H${i+1}: ${Math.round(h)}°</span>`;
+                aeSwatches.appendChild(div);
+            });
+        };
+
         function playClickSound() {
             if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
@@ -256,10 +909,296 @@
                 spinSoundNode.stop();
             }
         }
+
+        // ===== Armonizador Exprés: lógica =====
+        function angleDiff(a, b) {
+            const d = Math.abs(((a - b + 540) % 360) - 180);
+            return d;
+        }
+        function expectedMovHue(tipo, base) {
+            switch (tipo) {
+                case 'Triada': return clampHue(base + 120);
+                case 'Tétrada': return clampHue(base + 90);
+                case 'Complementaria': return clampHue(base + 180);
+                case 'Análoga': return clampHue(base + 30);
+                default: return clampHue(base + 120);
+            }
+        }
+        function huesForType(tipo, base) {
+            switch (tipo) {
+                case 'Triada': return [clampHue(base), clampHue(base + 120), clampHue(base + 240)];
+                case 'Tétrada': return [clampHue(base), clampHue(base + 90), clampHue(base + 180), clampHue(base + 270)];
+                case 'Complementaria': return [clampHue(base), clampHue(base + 180)];
+                case 'Análoga': return [clampHue(base - 30), clampHue(base), clampHue(base + 30)];
+                default: return [clampHue(base), clampHue(base + 120), clampHue(base + 240)];
+            }
+        }
+        function ensureMarkers() {
+            // Crea marcadores si no existen
+            if (!aeState.baseHue && aeState.baseHue !== 0) aeState.baseHue = 30;
+            if (aeState.movHue == null) aeState.movHue = expectedMovHue(aeState.tipo, aeState.baseHue);
+            if (!aeState.markers || !Array.isArray(aeState.markers)) aeState.markers = [];
+            const haveBase = aeState.markers.find(m => m.role === 'base');
+            const haveMov = aeState.markers.find(m => m.role === 'mov');
+
+            if (!haveBase) {
+                const el = document.createElement('div');
+                el.className = 'arm-marker';
+                el.dataset.role = 'base';
+                el.setAttribute('aria-label', 'Marcador base');
+                aeWheel.appendChild(el);
+                attachDrag(el, 'base');
+                aeState.markers.push({ role: 'base', hue: aeState.baseHue, el });
+            }
+            if (!haveMov) {
+                const el2 = document.createElement('div');
+                el2.className = 'arm-marker';
+                el2.dataset.role = 'mov';
+                el2.setAttribute('aria-label', 'Marcador móvil');
+                aeWheel.appendChild(el2);
+                attachDrag(el2, 'mov');
+                aeState.markers.push({ role: 'mov', hue: aeState.movHue, el: el2 });
+            }
+            // Asegura data-role estilos
+            aeState.markers.forEach(m => {
+                m.el.dataset.role = m.role;
+            });
+        }
+        function attachDrag(el, role) {
+            let dragging = false;
+            const onDown = (e) => {
+                e.preventDefault();
+                dragging = true;
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+                document.addEventListener('touchmove', onMove, { passive: false });
+                document.addEventListener('touchend', onUp);
+            };
+            const onMove = (e) => {
+                if (!dragging) return;
+                e.preventDefault();
+                const rect = aeWheel.getBoundingClientRect();
+                const touch = e.touches ? e.touches[0] : e;
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                const cx = rect.width / 2;
+                const cy = rect.height / 2;
+                const dx = x - cx;
+                const dy = y - cy;
+                const deg = Math.atan2(dy, dx) * 180 / Math.PI; // -180..180 (0 at right)
+                const hue = clampHue(deg + 90); // 0 at top
+                if (role === 'base') {
+                    aeState.baseHue = hue;
+                    const bm = aeState.markers.find(m => m.role === 'base');
+                    if (bm) bm.hue = hue;
+                } else {
+                    aeState.movHue = hue;
+                    const mv = aeState.markers.find(m => m.role === 'mov');
+                    if (mv) mv.hue = hue;
+                }
+                renderAE();
+            };
+            const onUp = () => {
+                dragging = false;
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend', onUp);
+            };
+            el.addEventListener('mousedown', onDown);
+            el.addEventListener('touchstart', onDown, { passive: false });
+        }
+        function positionMarker(el, center, radius, hue) {
+            const p = polarToXY(center, radius, hue);
+            el.style.left = `${p.x}px`;
+            el.style.top = `${p.y}px`;
+        }
+        function renderAE() {
+            ensureMarkers();
+            // Medidas
+            const rect = aeWheel.getBoundingClientRect();
+            const center = { x: rect.width / 2, y: rect.height / 2 };
+            const radius = Math.min(rect.width, rect.height) / 2 - 14;
+
+            // Actualiza modelos
+            const baseMarker = aeState.markers.find(m => m.role === 'base');
+            const movMarker = aeState.markers.find(m => m.role === 'mov');
+            if (baseMarker) baseMarker.hue = aeState.baseHue;
+            if (movMarker) movMarker.hue = aeState.movHue;
+
+            // Posiciona
+            if (baseMarker) positionMarker(baseMarker.el, center, radius, baseMarker.hue);
+            if (movMarker) positionMarker(movMarker.el, center, radius, movMarker.hue);
+
+            // Swatches y misión
+            const hues = huesForType(aeState.tipo, aeState.baseHue);
+            setSwatches(hues);
+            const m = document.getElementById('ae-mision');
+            if (m) m.textContent = `Misión: ${aeState.tipo}`;
+        }
+        function initAE() {
+            ensureMarkers();
+            // Valores iniciales
+            aeState.movHue = expectedMovHue(aeState.tipo, aeState.baseHue);
+            renderAE();
+
+            // Botones
+            if (aeRandom) {
+                aeRandom.addEventListener('click', () => {
+                    setupAudio();
+                    playClickSound();
+                    aeState.baseHue = Math.floor(Math.random() * 360);
+                    aeState.movHue = expectedMovHue(aeState.tipo, aeState.baseHue);
+                    renderAE();
+                });
+            }
+            if (aeTipo) {
+                aeTipo.addEventListener('click', () => {
+                    setupAudio();
+                    playClickSound();
+                    const idx = (AE_TYPES.indexOf(aeState.tipo) + 1) % AE_TYPES.length;
+                    aeState.tipo = AE_TYPES[idx];
+                    // Ajusta mov a posición objetivo por defecto del nuevo tipo
+                    aeState.movHue = expectedMovHue(aeState.tipo, aeState.baseHue);
+                    renderAE();
+                });
+            }
+            if (aeVerificar) {
+                aeVerificar.addEventListener('click', () => {
+                    setupAudio();
+                    playClickSound();
+                    const tol = 10; // tolerancia en grados
+                    const base = aeState.baseHue;
+                    const mov = aeState.movHue;
+                    let ok = false, objetivo = 0, descripcion = '';
+                    switch (aeState.tipo) {
+                        case 'Triada': objetivo = clampHue(base + 120); ok = angleDiff(mov, objetivo) <= tol; descripcion = '120°'; break;
+                        case 'Tétrada': objetivo = clampHue(base + 90); ok = angleDiff(mov, objetivo) <= tol; descripcion = '90°'; break;
+                        case 'Complementaria': objetivo = clampHue(base + 180); ok = angleDiff(mov, objetivo) <= tol; descripcion = '180°'; break;
+                        case 'Análoga': {
+                            const o1 = clampHue(base + 30), o2 = clampHue(base - 30);
+                            const d1 = angleDiff(mov, o1), d2 = angleDiff(mov, o2);
+                            objetivo = d1 <= d2 ? o1 : o2;
+                            ok = Math.min(d1, d2) <= tol;
+                            descripcion = '≈30°';
+                            break;
+                        }
+                    }
+                    aeFeedback.classList.remove('hidden');
+                    if (ok) {
+                        aeFeedback.textContent = `¡Correcto! La posición del marcador móvil cumple la armonía ${aeState.tipo} (${descripcion}).`;
+                    } else {
+                        aeFeedback.textContent = `Aún no. Intenta colocar el marcador azul a ${descripcion} del marcador base.`;
+                    }
+                });
+            }
+        }
+        // ===== Fin Armonizador Exprés =====
+
+        // ===== Laboratorio de Mezclas =====
+        let mlState = { base: null, objetivo: null };
+        function rgb(r, g, b) { return `rgb(${r}, ${g}, ${b})`; }
+        function rnd(min = 40, max = 215) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        function randColor() { return { r: rnd(), g: rnd(), b: rnd() }; }
+        function mix(a, b) { return { r: Math.round((a.r + b.r) / 2), g: Math.round((a.g + b.g) / 2), b: Math.round((a.b + b.b) / 2) }; }
+        function dist(a, b) { const dr = a.r - b.r, dg = a.g - b.g, db = a.b - b.b; return Math.sqrt(dr*dr + dg*dg + db*db); }
+        function getSliderColor() {
+            const r = +document.getElementById('ml-r').value;
+            const g = +document.getElementById('ml-g').value;
+            const b = +document.getElementById('ml-b').value;
+            return { r, g, b };
+        }
+        function updateSliderLabels() {
+            const r = document.getElementById('ml-r').value;
+            const g = document.getElementById('ml-g').value;
+            const b = document.getElementById('ml-b').value;
+            const rVal = document.getElementById('ml-r-val');
+            const gVal = document.getElementById('ml-g-val');
+            const bVal = document.getElementById('ml-b-val');
+            if (rVal) rVal.textContent = r;
+            if (gVal) gVal.textContent = g;
+            if (bVal) bVal.textContent = b;
+        }
+        function updateMedio() {
+            const medioEl = document.getElementById('ml-medio');
+            const current = mix(mlState.base, getSliderColor());
+            medioEl.style.background = rgb(current.r, current.g, current.b);
+            return current;
+        }
+        function renderML() {
+            const baseEl = document.getElementById('ml-base');
+            const objetivoEl = document.getElementById('ml-objetivo');
+            baseEl.style.background = rgb(mlState.base.r, mlState.base.g, mlState.base.b);
+            objetivoEl.style.background = rgb(mlState.objetivo.r, mlState.objetivo.g, mlState.objetivo.b);
+            updateSliderLabels();
+            updateMedio();
+        }
+        function newGoal() {
+            mlState.base = randColor();
+            const hidden = randColor();
+            mlState.objetivo = mix(mlState.base, hidden);
+            const r = document.getElementById('ml-r');
+            const g = document.getElementById('ml-g');
+            const b = document.getElementById('ml-b');
+            r.value = 128; g.value = 128; b.value = 128;
+            const fb = document.getElementById('ml-feedback');
+            fb.classList.add('hidden');
+            fb.textContent = '';
+            renderML();
+        }
+        function verifyML() {
+            setupAudio();
+            playClickSound();
+            const current = updateMedio();
+            const d = dist(current, mlState.objetivo);
+            const fb = document.getElementById('ml-feedback');
+            fb.classList.remove('hidden');
+            const rd = Math.abs(current.r - mlState.objetivo.r);
+            const gd = Math.abs(current.g - mlState.objetivo.g);
+            const bd = Math.abs(current.b - mlState.objetivo.b);
+            if (d <= 18) {
+                fb.textContent = '¡Excelente! ¡Mezcla acertada! Tu color está muy cerca del objetivo.';
+            } else if (d <= 35) {
+                fb.textContent = `¡Casi! Diferencia total ≈ ${d.toFixed(1)}. Ajusta R ${rd}, G ${gd}, B ${bd}.`;
+            } else {
+                fb.textContent = `Aún lejos. Diferencia total ≈ ${d.toFixed(1)}. Pista: acerca los deslizadores a R ${mlState.objetivo.r}, G ${mlState.objetivo.g}, B ${mlState.objetivo.b}.`;
+            }
+        }
+        function initML() {
+            ['ml-r','ml-g','ml-b'].forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('input', () => {
+                    const valEl = document.getElementById(id + '-val');
+                    if (valEl) valEl.textContent = el.value;
+                    updateMedio();
+                });
+                el.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyML(); });
+            });
+            document.getElementById('ml-random').addEventListener('click', newGoal);
+            document.getElementById('ml-verificar').addEventListener('click', verifyML);
+            newGoal();
+        }
+        // ===== Fin Laboratorio de Mezclas =====
         
         function init() {
             triadaBtn.addEventListener('click', () => spinRoulette(3));
             tetradaBtn.addEventListener('click', () => spinRoulette(4));
+            
+            // Accesibilidad: activar con teclado
+            triadaBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triadaBtn.click(); }});
+            tetradaBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tetradaBtn.click(); }});
+            
+            // Enviar verificación con Enter desde inputs
+            challengesDisplay.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const card = e.target.closest('.challenge-card');
+                    if (card) {
+                        const btn = card.querySelector('.verify-btn');
+                        if (btn && !btn.disabled) btn.click();
+                    }
+                }
+            });
+            
             challengesDisplay.addEventListener('click', (event) => {
                 if (event.target && event.target.matches('.verify-btn')) {
                     setupAudio();
@@ -267,6 +1206,11 @@
                     handleVerification(event.target);
                 }
             });
+
+            // Inicializar Armonizador Exprés
+            initAE();
+            // Inicializar Laboratorio de Mezclas
+            initML();
         }
         
         function spinRoulette(count) {
@@ -295,8 +1239,14 @@
             wheel.style.setProperty('--start-angle', `${startAngle}deg`);
             wheel.style.setProperty('--end-angle', `${endAngle}deg`);
             
-            // Añade la clase que ejecuta la animación
+            // Añade la clase que ejecuta la animación con efecto de rebote al final
+            wheel.style.animationTimingFunction = 'cubic-bezier(0.33, 1, 0.68, 1)';
             wheel.classList.add('spinning');
+            
+            // Añade un efecto de pulso a la forma seleccionada
+            const shapeElement = count === 3 ? document.getElementById('shape-triada') : document.getElementById('shape-tetrada');
+            shapeElement.style.animation = 'pulse 1s infinite';
+            shapeElement.style.animationDelay = '3s';
             
             challengesDisplay.innerHTML = '<p style="font-size: 1.2em; color: #555;">Girando la ruleta...</p>';
 
@@ -319,24 +1269,38 @@
                 const card = document.createElement('div');
                 card.className = 'challenge-card';
                 card.id = `card-${desafio.id}`;
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
                 card.innerHTML = `
-                    <h3>Desafío Secreto</h3>
-                    <p class="pista"><strong>Pista:</strong> ${desafio.pista}</p>
+                    <div class="challenge-header">
+                        <span class="challenge-icon">🎨</span>
+                        <h3>Desafío Secreto</h3>
+                    </div>
+                    <p class="pista" id="hint-${desafio.id}"><strong>Pista:</strong> ${desafio.pista}</p>
                     <p><strong>Concepto:</strong> ${desafio.concept}</p>
                     <p>${desafio.challenge}</p>
                     <strong>${desafio.question}</strong>
                     <div class="verification-area">
                         <div class="inputs-container">
-                            <input type="number" placeholder="Resultado...">
-                            <select>
+                            <input type="number" placeholder="Resultado..." min="0" step="1" inputmode="numeric" aria-label="Resultado numérico" aria-describedby="hint-${desafio.id}" required>
+                            <select aria-label="Selecciona el color" aria-describedby="hint-${desafio.id}" required>
                                 <option value="">Elige un color...</option>
                                 ${desafios.map(d => `<option value="${d.colorName}">${d.colorName}</option>`).join('')}
                             </select>
                         </div>
-                        <button class="verify-btn" data-id="${desafio.id}">Verificar Desafío</button>
+                        <button class="verify-btn" data-id="${desafio.id}">
+                            <span class="button-icon">✓</span> Verificar Desafío
+                        </button>
                     </div>
                     <div class="feedback-area hidden" id="feedback-${desafio.id}"></div>`;
                 challengesDisplay.appendChild(card);
+                
+                // Animar la entrada de la tarjeta
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                    card.style.transition = 'all 0.3s ease';
+                }, 50 * (selected.indexOf(desafio) + 1));
             });
         }
 
@@ -345,13 +1309,29 @@
             const card = document.getElementById(`card-${challengeId}`);
             const input = card.querySelector('input[type="number"]');
             const select = card.querySelector('select');
-            
-            const serverResponse = solucionesSecretas[challengeId];
-            const desafioData = desafios.find(d => d.id == challengeId);
             const feedbackEl = document.getElementById(`feedback-${challengeId}`);
 
+            // Validaciones previas
+            if (!input.value || !select.value) {
+                feedbackEl.innerHTML = `<span class="feedback-icon">ℹ️</span> <strong>Completa ambos campos.</strong> Ingresa el resultado y selecciona un color.`;
+                feedbackEl.className = 'feedback-area partial';
+                feedbackEl.classList.remove('hidden');
+                feedbackEl.setAttribute('role','alert');
+                input.focus();
+                return;
+            }
+            const serverResponse = solucionesSecretas[challengeId];
+            const desafioData = desafios.find(d => d.id == challengeId);
             const numberCorrect = parseInt(input.value, 10) === serverResponse.solucion;
             const colorCorrect = select.value === desafioData.colorName;
+
+            // Preparar animación del feedback
+            feedbackEl.style.opacity = '0';
+            feedbackEl.style.transform = 'translateY(-10px)';
+            feedbackEl.style.transition = 'all 0.3s ease';
+
+            // Restaurar el botón
+            button.disabled = false;
 
             if (numberCorrect && colorCorrect) {
                 const challengeInRound = currentChallenges.find(c => c.id == challengeId);
@@ -359,22 +1339,38 @@
 
                 card.style.borderTopColor = desafioData.hex;
                 card.querySelector('h3').textContent = `¡Resuelto! Era ${desafioData.colorName}`;
-                feedbackEl.innerHTML = `<strong>¡Desafío Completo!</strong> ${serverResponse.curiosidad}`;
+                feedbackEl.innerHTML = `<span class="feedback-icon">✅</span> <strong>¡Desafío Completo!</strong> ${serverResponse.curiosidad}`;
                 feedbackEl.className = 'feedback-area correct';
+                button.innerHTML = '<span class="button-icon">✓</span> ¡Verificado!';
                 card.querySelector('.verification-area').classList.add('hidden');
+                
+                // Añadir efecto de celebración
+                card.style.animation = 'pulse 0.5s';
+                setTimeout(() => card.style.animation = '', 500);
                 
                 checkRoundCompletion();
             } else if (numberCorrect && !colorCorrect) {
-                feedbackEl.innerHTML = `<strong>Parcialmente correcto.</strong> ¡El cálculo es correcto, pero el color no!`;
+                feedbackEl.innerHTML = `<span class="feedback-icon">⚠️</span> <strong>Parcialmente correcto.</strong> ¡El cálculo es correcto, pero el color no!`;
                 feedbackEl.className = 'feedback-area partial';
+                button.innerHTML = '<span class="button-icon">↻</span> Intentar de nuevo';
             } else if (!numberCorrect && colorCorrect) {
-                feedbackEl.innerHTML = `<strong>Parcialmente correcto.</strong> ¡Adivinaron el color, pero el cálculo es incorrecto!`;
+                feedbackEl.innerHTML = `<span class="feedback-icon">⚠️</span> <strong>Parcialmente correcto.</strong> ¡Adivinaron el color, pero el cálculo es incorrecto!`;
                 feedbackEl.className = 'feedback-area partial';
+                button.innerHTML = '<span class="button-icon">↻</span> Intentar de nuevo';
             } else {
-                feedbackEl.innerHTML = `<strong>Incorrecto.</strong> Ni el cálculo ni el color son correctos.`;
+                feedbackEl.innerHTML = `<span class="feedback-icon">❌</span> <strong>Incorrecto.</strong> Ni el cálculo ni el color son correctos.`;
                 feedbackEl.className = 'feedback-area incorrect';
+                button.innerHTML = '<span class="button-icon">↻</span> Intentar de nuevo';
             }
+            
             feedbackEl.classList.remove('hidden');
+            
+            // Animar la aparición del feedback
+            setTimeout(() => {
+                feedbackEl.style.opacity = '1';
+                feedbackEl.style.transform = 'translateY(0)';
+            }, 50);
+            
         }
 
         function checkRoundCompletion() {
@@ -384,6 +1380,8 @@
             if (allSolved) {
                 roundsCompleted++;
                 progressTracker.textContent = `Rondas completadas: ${roundsCompleted} de 2`;
+                progressTracker.style.animation = 'pulse 0.5s 3';
+                setTimeout(() => progressTracker.style.animation = '', 1500);
                 
                 const title = `¡Ronda ${roundsCompleted} superada! Han descubierto la armonía:`;
                 const colorDisplayHTML = currentChallenges.map(challenge => {
@@ -392,12 +1390,40 @@
                     return `<span style="background-color:${challenge.hex};color:${textColor};padding:10px 15px;border-radius:5px;margin:5px;display:inline-block;font-weight:bold;">${challenge.colorName}</span>`;
                 }).join('');
 
-                challengesDisplay.innerHTML = `<div style="width: 100%;"><h2 style="color: #28a745;">${title}</h2><div style="margin-top:15px;">${colorDisplayHTML}</div></div>`;
+                // Limpiar el área de desafíos primero
+                challengesDisplay.innerHTML = '';
+                
+                // Añadir mensaje de completado con animación
+                setTimeout(() => {
+                    challengesDisplay.innerHTML = `<div class="completion-message" style="opacity: 0; transform: translateY(20px);"><div style="width: 100%;"><h2 style="color: #28a745;">${title}</h2><div style="margin-top:15px;">${colorDisplayHTML}</div></div></div>`;
+                    
+                    // Animar la entrada del mensaje
+                    setTimeout(() => {
+                        const message = document.querySelector('.completion-message');
+                        message.style.opacity = '1';
+                        message.style.transform = 'translateY(0)';
+                        message.style.transition = 'all 0.5s ease';
+                        
+                        // Añadir efecto de confeti para celebrar
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        message.appendChild(confetti);
+                    }, 50);
+                }, 500);
+                
                 currentChallenges = [];
 
                 if (roundsCompleted >= 2) {
                     progressTracker.textContent = "¡Desafío Global Completado!";
-                    challengesDisplay.innerHTML += `<h2 style="color: #28a745; font-size: 2em; margin-top: 20px;">¡FELICITACIONES! Han completado toda la actividad.</h2>`;
+                    setTimeout(() => {
+                        challengesDisplay.innerHTML += `<h2 style="color: #28a745; font-size: 2em; margin-top: 20px; opacity: 0; transform: translateY(20px);" class="final-message">¡FELICITACIONES! Han completado toda la actividad.</h2>`;
+                        setTimeout(() => {
+                            const finalMessage = document.querySelector('.final-message');
+                            finalMessage.style.opacity = '1';
+                            finalMessage.style.transform = 'translateY(0)';
+                            finalMessage.style.transition = 'all 0.5s ease';
+                        }, 50);
+                    }, 1000);
                     triadaBtn.disabled = true;
                     tetradaBtn.disabled = true;
                 }
