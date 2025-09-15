@@ -55,9 +55,26 @@
             );
             border-radius: 50%; border: 5px solid #333;
             box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            /* --> AQUI OCURRE LA MAGIA (CSS): Esta es la propiedad clave que hace que el giro sea una animación suave. */
-            transition: transform 3s cubic-bezier(0.33, 1, 0.68, 1);
+            /* La animación ahora se define y se aplica con la clase '.spinning' */
         }
+
+        /* --> AQUI OCURRE LA MAGIA (CSS): Definición explícita de la animación de giro. */
+        @keyframes spin-animation {
+            from {
+                transform: rotate(var(--start-angle));
+            }
+            to {
+                transform: rotate(var(--end-angle));
+            }
+        }
+        .spinning {
+            animation-name: spin-animation;
+            animation-duration: 3s;
+            animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+            animation-fill-mode: forwards; /* Mantiene la posición final */
+            animation-iteration-count: 1; /* Asegura que la animación solo se ejecute una vez */
+        }
+
 
         .roulette-container .shape {
             position: absolute; top: 50%; left: 50%;
@@ -265,12 +282,22 @@
 
             playSpinSound();
             
-            const randomSpins = 3 + Math.random() * 3;
-            currentRotation += (360 * randomSpins);
-            
-            // --> AQUI OCURRE LA MAGIA (JAVASCRIPT): Esta línea dispara la animación del CSS al cambiar el ángulo de rotación.
-            wheel.style.transform = rotate(${currentRotation}deg);
+            // --> AQUI OCURRE LA MAGIA (JAVASCRIPT): Esta sección activa la animación definida en el CSS.
+            wheel.classList.remove('spinning'); // Reinicia la animación
+            void wheel.offsetWidth; // Fuerza al navegador a reconocer el reinicio
 
+            const startAngle = currentRotation;
+            const randomSpins = 3 + Math.random() * 3;
+            const endAngle = startAngle + (360 * randomSpins);
+            currentRotation = endAngle % 360; // Actualiza la rotación para el próximo giro, normalizando a 360 grados
+
+            // Establece las variables de ángulo para el CSS
+            wheel.style.setProperty('--start-angle', `${startAngle}deg`);
+            wheel.style.setProperty('--end-angle', `${endAngle}deg`);
+            
+            // Añade la clase que ejecuta la animación
+            wheel.classList.add('spinning');
+            
             challengesDisplay.innerHTML = '<p style="font-size: 1.2em; color: #555;">Girando la ruleta...</p>';
 
             setTimeout(() => {
@@ -283,7 +310,7 @@
                     triadaBtn.disabled = false;
                     tetradaBtn.disabled = false;
                 }
-            }, 3000);
+            }, 3000); // Duración de la animación
         }
 
         function displayChallenges(selected) {
@@ -291,7 +318,7 @@
             selected.forEach(desafio => {
                 const card = document.createElement('div');
                 card.className = 'challenge-card';
-                card.id = card-${desafio.id};
+                card.id = `card-${desafio.id}`;
                 card.innerHTML = `
                     <h3>Desafío Secreto</h3>
                     <p class="pista"><strong>Pista:</strong> ${desafio.pista}</p>
@@ -303,7 +330,7 @@
                             <input type="number" placeholder="Resultado...">
                             <select>
                                 <option value="">Elige un color...</option>
-                                ${desafios.map(d => <option value="${d.colorName}">${d.colorName}</option>).join('')}
+                                ${desafios.map(d => `<option value="${d.colorName}">${d.colorName}</option>`).join('')}
                             </select>
                         </div>
                         <button class="verify-btn" data-id="${desafio.id}">Verificar Desafío</button>
@@ -315,13 +342,13 @@
 
         function handleVerification(button) {
             const challengeId = button.dataset.id;
-            const card = document.getElementById(card-${challengeId});
+            const card = document.getElementById(`card-${challengeId}`);
             const input = card.querySelector('input[type="number"]');
             const select = card.querySelector('select');
             
             const serverResponse = solucionesSecretas[challengeId];
             const desafioData = desafios.find(d => d.id == challengeId);
-            const feedbackEl = document.getElementById(feedback-${challengeId});
+            const feedbackEl = document.getElementById(`feedback-${challengeId}`);
 
             const numberCorrect = parseInt(input.value, 10) === serverResponse.solucion;
             const colorCorrect = select.value === desafioData.colorName;
@@ -331,20 +358,20 @@
                 if (challengeInRound) challengeInRound.solved = true;
 
                 card.style.borderTopColor = desafioData.hex;
-                card.querySelector('h3').textContent = ¡Resuelto! Era ${desafioData.colorName};
-                feedbackEl.innerHTML = <strong>¡Desafío Completo!</strong> ${serverResponse.curiosidad};
+                card.querySelector('h3').textContent = `¡Resuelto! Era ${desafioData.colorName}`;
+                feedbackEl.innerHTML = `<strong>¡Desafío Completo!</strong> ${serverResponse.curiosidad}`;
                 feedbackEl.className = 'feedback-area correct';
                 card.querySelector('.verification-area').classList.add('hidden');
                 
                 checkRoundCompletion();
             } else if (numberCorrect && !colorCorrect) {
-                feedbackEl.innerHTML = <strong>Parcialmente correcto.</strong> ¡El cálculo es correcto, pero el color no!;
+                feedbackEl.innerHTML = `<strong>Parcialmente correcto.</strong> ¡El cálculo es correcto, pero el color no!`;
                 feedbackEl.className = 'feedback-area partial';
             } else if (!numberCorrect && colorCorrect) {
-                feedbackEl.innerHTML = <strong>Parcialmente correcto.</strong> ¡Adivinaron el color, pero el cálculo es incorrecto!;
+                feedbackEl.innerHTML = `<strong>Parcialmente correcto.</strong> ¡Adivinaron el color, pero el cálculo es incorrecto!`;
                 feedbackEl.className = 'feedback-area partial';
             } else {
-                feedbackEl.innerHTML = <strong>Incorrecto.</strong> Ni el cálculo ni el color son correctos.;
+                feedbackEl.innerHTML = `<strong>Incorrecto.</strong> Ni el cálculo ni el color son correctos.`;
                 feedbackEl.className = 'feedback-area incorrect';
             }
             feedbackEl.classList.remove('hidden');
@@ -356,21 +383,21 @@
 
             if (allSolved) {
                 roundsCompleted++;
-                progressTracker.textContent = Rondas completadas: ${roundsCompleted} de 2;
+                progressTracker.textContent = `Rondas completadas: ${roundsCompleted} de 2`;
                 
-                const title = ¡Ronda ${roundsCompleted} superada! Han descubierto la armonía:;
+                const title = `¡Ronda ${roundsCompleted} superada! Han descubierto la armonía:`;
                 const colorDisplayHTML = currentChallenges.map(challenge => {
                     const hex = challenge.hex.substring(1), r = parseInt(hex.substring(0,2),16), g = parseInt(hex.substring(2,4),16), b = parseInt(hex.substring(4,6),16);
                     const textColor = ((r*0.299 + g*0.587 + b*0.114) > 186) ? 'black' : 'white';
-                    return <span style="background-color:${challenge.hex};color:${textColor};padding:10px 15px;border-radius:5px;margin:5px;display:inline-block;font-weight:bold;">${challenge.colorName}</span>;
+                    return `<span style="background-color:${challenge.hex};color:${textColor};padding:10px 15px;border-radius:5px;margin:5px;display:inline-block;font-weight:bold;">${challenge.colorName}</span>`;
                 }).join('');
 
-                challengesDisplay.innerHTML = <div style="width: 100%;"><h2 style="color: #28a745;">${title}</h2><div style="margin-top:15px;">${colorDisplayHTML}</div></div>;
+                challengesDisplay.innerHTML = `<div style="width: 100%;"><h2 style="color: #28a745;">${title}</h2><div style="margin-top:15px;">${colorDisplayHTML}</div></div>`;
                 currentChallenges = [];
 
                 if (roundsCompleted >= 2) {
                     progressTracker.textContent = "¡Desafío Global Completado!";
-                    challengesDisplay.innerHTML += <h2 style="color: #28a745; font-size: 2em; margin-top: 20px;">¡FELICITACIONES! Han completado toda la actividad.</h2>;
+                    challengesDisplay.innerHTML += `<h2 style="color: #28a745; font-size: 2em; margin-top: 20px;">¡FELICITACIONES! Han completado toda la actividad.</h2>`;
                     triadaBtn.disabled = true;
                     tetradaBtn.disabled = true;
                 }
